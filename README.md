@@ -4,6 +4,8 @@ Python script to collect IP-addresses from NetBox and check if IP is up
 and making reverse dns-lookup against IP's. Script automatically
 updates entry's DNS record.
 
+![Example output](https://github.com/hrleinonen/netbox-ipam/blob/main/pictures/NetBox_funet.png)
+
 Managing IP addresses is great, but maintaining documentation is a pain. Someone deletes the device but doesn't delete its data. DNS records are also not always clear. I coded this script to alleviate these problems.
 
 The script searches the NetBox API for IP addresses that are marked with "alive" status and ping them, after that it updates the IP address information about whether the IP is up or not and when it was last up. The script also updates the information because the IP has been up for the first time.
