@@ -1,0 +1,6 @@
+name,label,content_types,type,required,description,default,ui_visibility,weight,filter_logic,cloneable,search_weight
+dns_enabled,DNS,ipam.ipaddress,boolean,False,"Update and resolve DNS-name automatically.",false,read-write,100,loose,true,1000
+first_seen,First seen,ipam.ipaddress,datetime,false,"When the IP-address is first seen in ping.",,read-only,100,loose,false,1000
+host_alive,Alive,ipam.ipaddress,boolean,false,"True if IP-address is online, False if IP-address is offline based on ping results.",,read-only,100,loose,false,1000
+last_seen,Last seen,ipam.ipaddress,datetime,false,"When the IP-address is last pinged successfully.",,read-only,100,loose,false,1000
+seen_enabled,Scan,ipam.ipaddress,boolean,false,"True if IP-address is on ping process, False if not.",false,read-write,100,loose,true,1000
