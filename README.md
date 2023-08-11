@@ -15,3 +15,11 @@ The script also performs a reverse DNS query for IP addresses and updates the in
 You must create custom_fields in NetBox, please check netbox_custom_date.csv and netbox_custom_datetime.cvs files. If your NetBox version supports datetime format in custom fields, then use netbox_custom_datetime.cvs file.
 
 API-needs readwrite perssion in NetBox.
+
+Screenshot from Customization > Custom Fields (Import netbox_custom_datetime.cvs should be something like this):
+
+![Example output](https://github.com/hrleinonen/netbox-ipam/blob/main/pictures/NetBox_customfields.png)
+
+Screenshot from new IP.
+
+![Example output](https://github.com/hrleinonen/netbox-ipam/blob/main/pictures/NetBox_New_IP.png)
