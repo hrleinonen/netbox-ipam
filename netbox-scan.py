@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 #
 # Python script to scan IP-address ranges and add active IP's NetBox.
-# <---- Reverse is not working yet --->
 # Script also make reverse dns-lookup against IP's. Script automatically
 # updates entry's DNS record.
 #
@@ -10,20 +9,17 @@
 #
 # Usage 1: netbox-scan.py --networks 192.168.0.0/24 --url http://127.0.0.1:8000 --api asdasdasf12222 
 # Usage 2: netbox-scan.py --networks 192.168.0.0/24,10.20.0.0/23 --url http://127.0.0.1:8000 --api asdasdasf12222
+# Usage, do reserve DNS request and update IP-object): netbox-scan.py --networks 192.168.0.0/24 --url http://127.0.0.1:8000 --api asdasdasf12222 --dns
+# Usage, write logfile and show output: netbox-scan.py --networks 192.168.0.0/24 --url http://127.0.0.1:8000 --api asdasdasf12222 --log --out 
 #
 # Author: Ville Leinonen
-# Version: 0.1
+# Version: 0.2
 #
-import os
 import urllib3
-import json
 import time
 import requests
 import dns.resolver, dns.reversename
-from netbox import NetBox
 from ping3 import ping
-from dotenv import load_dotenv
-
 import argparse
 import ipaddress
 
@@ -34,13 +30,17 @@ parser.add_argument('--networks', type=str, nargs='+', required=True)
 parser.add_argument('--url', type=str, required=True)
 parser.add_argument('--api', type=str, required=True)
 parser.add_argument('--dns', action='store_true')
+parser.add_argument('--log', action='store_true')
+parser.add_argument('--out', action='store_true')
 
 args = parser.parse_args()
 
 networks = args.networks
 url = args.url
 token = args.api
-dns = args.dns
+dns_resolve = args.dns
+log = args.log
+out = args.out
 
 headers = {  
     'Content-Type': 'application/json',
@@ -96,20 +96,22 @@ for network in networks:
                      "comments": comment
                   }
                r = requests.post(str(url) + "/api/ipam/ip-addresses/", headers=headers, json=ip_data, verify=False)
-          
+
+               if log:
+                  logfile = open("netbox-scan.log", "a")
+                  logfile.write(current_time + " " + str(ip_mask) + " Added to NetBox.\n")
+                  logfile.close()
+
                resp = r.json()
 
                for resp_key, resp_val in resp.items():
                   if resp_key == "url":
-                     print(resp_val)
                      address_url = str(resp_val)
 
                # Check if DNS lookup required.
-               if dns == True:
+               if dns_resolve == True:
 
-                  ip_addrs = str(ip).strip()
-
-                  addrs = dns.reversename.from_address(ip_addrs)
+                  addrs = dns.reversename.from_address(str(ip))
          
                   try:
                      dns_name = str(dns.resolver.resolve(addrs,"PTR")[0])
@@ -120,14 +122,35 @@ for network in networks:
                            "dns_name" : str(dns_name)
                         }
                         r = requests.patch(address_url, headers=headers, json=dns_data, verify=False)
+
+                        if log:
+                           logfile = open("netbox-scan.log", "a")
+                           logfile.write(current_time + " " + str(ip_mask) + " DNS name " + str(dns_name) + ".\n")
+                           logfile.close()
+
                   except:
-                     print("No reverse DNS in {}".format(ip))
+                     if log:
+                        logfile = open("netbox-scan.log", "a")
+                        logfile.write(current_time + " " + str(ip) + " no reverse in DNS.\n")
+                        logfile.close()
+                     if out:
+                        print("No reverse DNS in {}".format(ip))
                   
             else:
-               print("IP {} is allready in NetBox".format(ip))
+               if log:
+                  logfile = open("netbox-scan.log", "a")
+                  logfile.write(current_time + " " + str(ip) + " is allready in NetBox.\n")
+                  logfile.close()
+               if out:
+                  print("IP {} is allready in NetBox".format(ip))
 
          else:
-            print("Address {} not responding.".format(ip_mask))
+            if log:
+               logfile = open("netbox-scan.log", "a")
+               logfile.write(current_time + " " + str(ip) + " is not responding.\n")
+               logfile.close()
+            if out:
+               print("Address {} not responding.".format(ip_mask))
 
       except:
          print("Error pinging {}".format(ip_mask))
